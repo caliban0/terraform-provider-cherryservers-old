@@ -17,9 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -377,14 +379,23 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"pricing": schema.SingleNestedAttribute{
 				Description: "Server pricing data.",
 				Computed:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"price": schema.Float32Attribute{
 						Computed:    true,
 						Description: "Server price.",
+						PlanModifiers: []planmodifier.Float32{
+							float32planmodifier.UseStateForUnknown(),
+						},
 					},
 					"currency": schema.StringAttribute{
 						Computed:    true,
 						Description: "Pricing currency.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},
@@ -713,7 +724,7 @@ func (r *serverResource) reinstall(ctx context.Context, plan serverResourceModel
 	server, _, err := r.client.Servers.Reinstall(serverID, requestReinstall)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"unable to create a CherryServers server resource",
+			"unable to reinstall a CherryServers server",
 			err.Error(),
 		)
 		return
