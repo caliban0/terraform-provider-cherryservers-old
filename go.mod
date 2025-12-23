@@ -7,6 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cherryservers/cherrygo/v3 v3.9.0
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0
@@ -32,7 +33,6 @@ require (
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
