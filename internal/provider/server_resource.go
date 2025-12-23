@@ -166,7 +166,12 @@ func (r *serverResource) Metadata(ctx context.Context, req resource.MetadataRequ
 }
 
 func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	const ifTargetUnchangedDescription = "Server private IP may change on re-install"
+	const (
+		ifTargetUnchangedDescription = "Server private IP may change on re-install"
+		reinstallWarning             = "You are updating attributes that require a server re-install." +
+			" This will wipe all of your data and may take awhile." +
+			" The server's private IP may change."
+	)
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -218,8 +223,7 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					WarnIfChangedString("Server re-install required.",
-						"You are updating attributes that require a server re-install."+
-							" This will wipe all of your data and may take awhile."),
+						reinstallWarning),
 				},
 			},
 			"ssh_key_ids": schema.SetAttribute{
@@ -231,8 +235,7 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 					WarnIfChangedSet("Server re-install required.",
-						"You are updating attributes that require a server re-install."+
-							" This will wipe all of your data and may take awhile."),
+						reinstallWarning),
 				},
 			},
 			"extra_ip_addresses_ids": schema.SetAttribute{
@@ -263,8 +266,7 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					WarnIfChangedString("Server re-install required.",
-						"You are updating attributes that require a server re-install."+
-							" This will wipe all of your data and may take awhile."),
+						reinstallWarning),
 				},
 			},
 			"tags": schema.MapAttribute{
@@ -293,8 +295,7 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Optional: true,
 				PlanModifiers: []planmodifier.Int64{
 					WarnIfChangedInt64("Server re-install required.",
-						"You are updating attributes that require a server re-install."+
-							" This will wipe all of your data and may take awhile."),
+						reinstallWarning),
 				},
 			},
 			"power_state": schema.StringAttribute{
