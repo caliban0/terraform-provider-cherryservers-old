@@ -9,7 +9,7 @@ import (
 )
 
 // IfConfigUnchanged compares the states of passed attributes to their configurations
-// and sets UseState to false if, for any of them, the configuration is non-null 
+// and sets UseState to false if, for any of them, the configuration is non-null
 // and different from state. Otherwise, UseState is set to true.
 func IfConfigUnchanged(exp ...path.Expression) UseStateForUnknownIfFunc {
 	return func(ctx context.Context,

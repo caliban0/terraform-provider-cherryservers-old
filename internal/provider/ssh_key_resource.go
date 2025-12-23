@@ -2,6 +2,9 @@ package provider
 
 import (
 	"context"
+	"strconv"
+	"strings"
+
 	"github.com/cherryservers/cherrygo/v3"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -10,8 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"strconv"
-	"strings"
+
 	customstringplanmodifier "terraform-provider-cherryservers/internal/stringplanmodifier"
 )
 
@@ -253,7 +255,6 @@ func (r *sshKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	ctx = tflog.SetField(ctx, "ssh_key_id", data.ID)
 	tflog.Trace(ctx, "deleted a resource")
-
 }
 
 func (r *sshKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

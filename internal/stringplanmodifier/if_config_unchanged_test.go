@@ -212,14 +212,14 @@ func TestIfConfigUnchangedComplex(t *testing.T) {
 				Config: testConfig(
 					types.SetValueMust(
 						objType,
-						 []attr.Value{types.ObjectValueMust(
-							map[string]attr.Type{testAttr: types.StringType}, 
+						[]attr.Value{types.ObjectValueMust(
+							map[string]attr.Type{testAttr: types.StringType},
 							map[string]attr.Value{testAttr: types.StringValue("a")})})),
 				State: testState(
 					types.SetValueMust(
 						objType,
-						 []attr.Value{types.ObjectValueMust(
-							map[string]attr.Type{testAttr: types.StringType}, 
+						[]attr.Value{types.ObjectValueMust(
+							map[string]attr.Type{testAttr: types.StringType},
 							map[string]attr.Value{testAttr: types.StringValue("b")})})),
 			},
 			want: &UseStateForUnknownIfFuncResponse{
@@ -232,12 +232,12 @@ func TestIfConfigUnchangedComplex(t *testing.T) {
 				Config: testConfig(
 					types.SetValueMust(
 						objType,
-						 []attr.Value{})),
+						[]attr.Value{})),
 				State: testState(
 					types.SetValueMust(
 						objType,
-						 []attr.Value{types.ObjectValueMust(
-							map[string]attr.Type{testAttr: types.StringType}, 
+						[]attr.Value{types.ObjectValueMust(
+							map[string]attr.Type{testAttr: types.StringType},
 							map[string]attr.Value{testAttr: types.StringValue("b")})})),
 			},
 			want: &UseStateForUnknownIfFuncResponse{

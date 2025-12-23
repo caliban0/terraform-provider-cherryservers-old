@@ -7,8 +7,9 @@ package stringplanmodifier_test
 
 import (
 	"context"
-	"terraform-provider-cherryservers/internal/stringplanmodifier"
 	"testing"
+
+	"terraform-provider-cherryservers/internal/stringplanmodifier"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
