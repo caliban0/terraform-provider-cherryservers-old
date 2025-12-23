@@ -26,6 +26,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	customsetplanmodifier "terraform-provider-cherryservers/internal/setplanmodifier"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -164,6 +166,8 @@ func (r *serverResource) Metadata(ctx context.Context, req resource.MetadataRequ
 }
 
 func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	const ifTargetUnchangedDescription = "Server private IP may change on re-install"
+
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		Description: "Provides a Cherry Servers server resource. This can be used to create, read, modify, and delete servers on your Cherry Servers account.",
@@ -310,7 +314,13 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"ip_addresses": schema.SetNestedAttribute{
 				Description: "IP addresses attached to the server.",
 				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+					// Private IP may change on re-install.
+					customsetplanmodifier.UseStateForUnknownIf(customsetplanmodifier.IfConfigUnchanged(path.Expressions{
+						path.MatchRoot("image"),
+						path.MatchRoot("ssh_key_ids"),
+						path.MatchRoot("os_partition_size"),
+						path.MatchRoot("user_data"),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
@@ -377,7 +387,7 @@ func (r *serverResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Optional: true,
 				Computed: true,
 				Description: "Allow server re-installation when updating `image`, `ssh_key_ids`, `os_partition_size` or `user_data`. " +
-					"WARNING: The reinstall will be triggered even if Terraform reports an in-place update.",
+					"WARNING: The reinstall will be triggered even if Terraform reports an in-place update. Also, the server's private IP may change.",
 				Default: booldefault.StaticBool(false),
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
