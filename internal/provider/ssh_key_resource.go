@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strconv"
 	"strings"
+	customstringplanmodifier "terraform-provider-cherryservers/internal/stringplanmodifier"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -57,6 +58,8 @@ func (r *sshKeyResource) Metadata(ctx context.Context, req resource.MetadataRequ
 }
 
 func (r *sshKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	const ifTargetUnchangedDescription = "The fingerprint is only expected to change when the key is changed."
+
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		Description: "Provides a CherryServers SSH Key resource. This can be used to create, and delete SSH Keys associated with your Cherry account.",
@@ -74,9 +77,9 @@ func (r *sshKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Computed:    true,
 				Description: "Fingerprint of the SSH public key.",
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("public_key"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"created": schema.StringAttribute{

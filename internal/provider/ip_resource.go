@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/cherryservers/cherrygo/v3"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,7 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"strconv"
+
+	customstringplanmodifier "terraform-provider-cherryservers/internal/stringplanmodifier"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -82,6 +85,8 @@ func (r *ipResource) Metadata(ctx context.Context, req resource.MetadataRequest,
 }
 
 func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	const ifTargetUnchangedDescription = "Use state, if the target is not being changed by another attribute."
+
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		Description: "Provides a CherryServers IP resource. This can be used to create, modify, and delete IP addresses.",
@@ -120,10 +125,10 @@ func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 					}...),
 				},
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("target_hostname"),
 						path.MatchRoot("target_ip_id"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"target_hostname": schema.StringAttribute{
@@ -137,10 +142,10 @@ func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 					}...),
 				},
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("target_id"),
 						path.MatchRoot("target_ip_id"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"target_ip_id": schema.StringAttribute{
@@ -149,10 +154,10 @@ func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("target_hostname"),
 						path.MatchRoot("target_id"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"a_record": schema.StringAttribute{
@@ -164,9 +169,9 @@ func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 					"API return value.",
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("a_record"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"ptr_record": schema.StringAttribute{
@@ -177,9 +182,9 @@ func (r *ipResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 				Description: "Reverse DNS name for the IP address. API return value.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					UseStateIfNoConfigurationChanges(path.Expressions{
+					customstringplanmodifier.UseStateForUnknownIf(customstringplanmodifier.IfConfigUnchanged(path.Expressions{
 						path.MatchRoot("ptr_record"),
-					}...),
+					}...), ifTargetUnchangedDescription, ifTargetUnchangedDescription),
 				},
 			},
 			"address": schema.StringAttribute{
@@ -336,7 +341,7 @@ func (r *ipResource) Update(ctx context.Context, req resource.UpdateRequest, res
 		RoutedTo: data.TargetIPID.ValueString(),
 	}
 
-	//The API returns error 500 if update is called with the same ptr_record as before, so check if it has changed.
+	// The API returns error 500 if update is called with the same ptr_record as before, so check if it has changed.
 	var ptrState types.String
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("ptr_record"), &ptrState)...)
 
@@ -418,7 +423,6 @@ func (r *ipResource) Delete(ctx context.Context, req resource.DeleteRequest, res
 
 	ctx = tflog.SetField(ctx, "ip_id", data.Id)
 	tflog.Trace(ctx, "deleted a resource")
-
 }
 
 func (r *ipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
