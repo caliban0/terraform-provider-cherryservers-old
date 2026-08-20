@@ -1,4 +1,4 @@
-module terraform-provider-cherryservers
+module github.com/caliban0/terraform-provider-cherryservers-old
 
 go 1.25.8
 
